@@ -24,8 +24,8 @@ const tools = {
 
     // reset old tool requirements
     switch(this._selected) {
-      case "poly":
-        polyDraw.setMap(null);
+      case "edit":
+        saveEdits();
       case "pick":
       case "snip":
         lines.selected = [];
@@ -39,8 +39,7 @@ const tools = {
 
     // set up new tool requirements
     switch(newId) {
-      case "poly":
-        polyDraw.setMap(map);
+      case "edit":
       case "pick":
       case "snip":
         for (let line of lines.drawn) {
@@ -106,7 +105,7 @@ const lines = {
       this._drawn.push(line);
     }
     
-    const needUpdate = ["pick", "snip"]; // "poly"
+    const needUpdate = ["pick", "snip", "edit"]; // "poly"
     for (let toolId of needUpdate) {
       const tool = document.getElementById(toolId);
       if (Object.keys(newData).length == 0) {
@@ -221,6 +220,15 @@ function init() {
 
 function keydownHandler(e) {
   switch (e.key) {
+    case "s":
+      tools.selected = "pick";
+      break;
+    case "c":
+      tools.selected = "snip";
+      break;
+    case "e":
+      tools.selected = "edit";
+      break;
     case "Shift":
       shiftKeyDown = true;
       break;
@@ -240,6 +248,12 @@ function keyupHandler(e) {
 }
 
 function clickMapHandler(e) {
+  console.log("map clicked");
+  if (tools.selected == "edit") {
+    tools.selected = "drag";
+    return;
+  }
+  
   if (lines.selected.length > 0 && !shiftKeyDown)
     lines.selected = [];
 }
@@ -297,20 +311,13 @@ function clickLineHandler(line) {
       data[`${id}a`] = {coords: pathA, grade: grade};
       data[`${id}b`] = {coords: pathB, grade: grade};
       lines.data = data;
-      tools.selected = "pick";
-      
-      // new gm.Marker({
-      //   map: map,
-      //   position: closestNode,
-      //   icon: {
-      //     path: gm.SymbolPath.CIRCLE,
-      //     scale: 2,
-      //     strokeOpacity: 0,
-      //     fillColor: "white",
-      //     fillOpacity: 1,
-      //   },
-      // });
-      
+    } else if (tools.selected == "edit") {
+      if (lines.selected.length == 1) {
+        tools.selected = "drag";
+        return;
+      }
+      lines.selected = [line];
+      line.setEditable(true);
       return;
     }
     
@@ -321,6 +328,19 @@ function clickLineHandler(line) {
       lines.selected = lines.selected.toSpliced(index, 1);
     } else lines.selected = [...lines.selected, line];
   }
+}
+
+
+function saveEdits() {
+  if (lines.selected.length == 0) return;
+  const line = lines.selected[0];
+  line.setEditable(false);
+  const id = line.get("id");
+  const path = line.getPath().getArray();
+  const data = lines.data;
+  data[id].coords = path;
+  lines.data = data;
+  lines.selected = [];
 }
 
 function joinLines() {
@@ -398,9 +418,9 @@ function importData() {
 }
 
 function downloadData() {
+  tools.selected = "drag";
   const json = JSON.stringify(lines.data);
-  const blob = new Blob([json], {type: "application/json"});
-  const url = URL.createObjectURL(blob);
+  const url = URL.createObjectURL(new Blob([json], {type: 'application/json'}));
   const title = prompt("Name your file:");
   if (title == null) return URL.revokeObjectURL(url);
   
