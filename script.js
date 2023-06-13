@@ -401,12 +401,11 @@ function downloadData() {
   const json = JSON.stringify(lines.data);
   const blob = new Blob([json], {type: "application/json"});
   const url = URL.createObjectURL(blob);
-
-  let title = prompt("Name your file:", "lineData");
-  console.log(title);
+  const title = prompt("Name your file:");
+  if (title == null) return URL.revokeObjectURL(url);
   
   downloadLink.href = url;
-  downloadLink.download = "lineData.json";
+  downloadLink.download = `${title}.json`;
   downloadLink.click();
   
   URL.revokeObjectURL(url);
