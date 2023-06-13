@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coastline Editor</title>
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA1NYVQwt7S-4xYCL1h_7vTgsDAyJ-mQ5w&amp;libraries=places,geometry,drawing"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css">
+    <script src="script.js"></script>
+  </head>
+
+  <body onload="init()" class="h-screen flex">
+    <div id="toolbar" class="w-12 bg-slate-200 flex flex-col items-center py-4 gap-y-1">
+      <button id="drag" onclick="tools.selected = this.id" data-selected="true" title="Drag" class="tool-btn hover:bg-slate-300 text-slate-800 h-8 w-8 rounded transition-all duration-200 material-symbols-rounded">pan_tool</button>
+      <button id="pick" onclick="tools.selected = this.id" data-selected="false" title="Select" class="tool-btn text-slate-300 h-8 w-8 rounded transition-all duration-200 material-symbols-rounded cursor-default">pan_tool_alt</button>
+      <button id="poly" onclick="tools.selected = this.id" data-selected="false" title="Polygon select" class="tool-btn text-slate-300 h-8 w-8 rounded transition-all duration-200 material-symbols-rounded cursor-default">pentagon</button>
+      <button id="snip" onclick="tools.selected = this.id" data-selected="false" title="Cut" class="tool-btn text-slate-300 h-8 w-8 rounded transition-all duration-200 material-symbols-rounded cursor-default">cut</button>
+      <div class="h-8"></div>
+      <button id="join" onclick="joinLines()" title="Join" class="text-slate-300 h-8 w-8 rounded transition-all duration-200 material-symbols-rounded cursor-default">join</button>
+      <button id="delete" onclick="deleteLines()" title="Delete" class="text-slate-300 h-8 w-8 rounded transition-all duration-200 material-symbols-rounded cursor-default">delete</button>
+      <button id="tag5" onclick="tagLines(5)" title="Tag C5" class="text-slate-300 h-8 w-8 rounded transition-all duration-200 material-symbols-rounded cursor-default">looks_5</button>
+      <button id="tag4" onclick="tagLines(4)" title="Tag C4" class="text-slate-300 h-8 w-8 rounded transition-all duration-200 material-symbols-rounded cursor-default">looks_4</button>
+      <button id="tag3" onclick="tagLines(3)" title="Tag C3" class="text-slate-300 h-8 w-8 rounded transition-all duration-200 material-symbols-rounded cursor-default">looks_3</button>
+      <div class="grow"></div>
+      <button onclick="importData()" title="Import line data" class="hover:bg-slate-300 text-slate-800 h-8 w-8 rounded transition-all duration-200 material-symbols-rounded">publish</button>
+      <button onclick="downloadData()" title="Download line data" class="hover:bg-slate-300 text-slate-800 h-8 w-8 rounded transition-all duration-200 material-symbols-rounded">download</button>
+      <button onclick="clearData()" title="Clear line data" class="hover:bg-slate-300 text-slate-800 h-8 w-8 rounded transition-all duration-200 material-symbols-rounded">close</button>
+    </div>
+    <div id="editor" class="relative grow">
+      <div id="map" class="h-full w-full"></div>
+      <div id="alerts" class="absolute z-10 bottom-0 left-0 flex flex-col gap-y-1 p-2 select-none"></div>
+    </div>
+  </body>
+</html>
