@@ -399,7 +399,11 @@ function importData() {
 
 function downloadData() {
   const json = JSON.stringify(lines.data);
-  const url = URL.createObjectURL(new Blob([json], {type: 'application/json'}));
+  const blob = new Blob([json], {type: "application/json"});
+  const url = URL.createObjectURL(blob);
+
+  let title = prompt("Name your file:", "lineData");
+  console.log(title);
   
   downloadLink.href = url;
   downloadLink.download = "lineData.json";
