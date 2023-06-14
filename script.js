@@ -126,12 +126,18 @@ const lines = {
     
     if (newHovered == null) {
       if (this._hovered == null) return;
-      this._hovered.setOptions({strokeOpacity: 0.5});
+      this._hovered.setOptions({
+        strokeOpacity: 0.5,
+        strokeWeight: 4,
+      });
       for (let point of this._points)
         point.setMap(null);
       this._points = [];
     } else {
-      newHovered.setOptions({strokeOpacity: 1});
+      newHovered.setOptions({
+        strokeOpacity: 1,
+        strokeWeight: 12,
+      });
       const path = newHovered.getPath().getArray();
       const endPoints = [0, path.length - 1];
       for (let index of endPoints)
@@ -187,7 +193,7 @@ function init() {
     {
       center: {lat: -33.8688, lng: 151.2093},
       mapTypeId: gm.MapTypeId.SATELLITE,
-      mapTypeControl: false,
+      // mapTypeControl: false,
       streetViewControl: false,
       fullscreenControl: false,
       zoomControl: false,
@@ -220,6 +226,9 @@ function init() {
 
 function keydownHandler(e) {
   switch (e.key) {
+    case "d":
+      tools.selected = "drag";
+      break;
     case "s":
       tools.selected = "pick";
       break;
@@ -228,6 +237,21 @@ function keydownHandler(e) {
       break;
     case "e":
       tools.selected = "edit";
+      break;
+    case "j":
+      joinLines();
+      break;
+    case "x":
+      deleteLines();
+      break;
+    case "3":
+      tagLines(3);
+      break;
+    case "4":
+      tagLines(4);
+      break;
+    case "5":
+      tagLines(5);
       break;
     case "Shift":
       shiftKeyDown = true;
@@ -311,6 +335,7 @@ function clickLineHandler(line) {
       data[`${id}a`] = {coords: pathA, grade: grade};
       data[`${id}b`] = {coords: pathB, grade: grade};
       lines.data = data;
+      tools.selected = "pick";
     } else if (tools.selected == "edit") {
       if (lines.selected.length == 1) {
         tools.selected = "drag";
