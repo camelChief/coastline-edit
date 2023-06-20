@@ -454,6 +454,26 @@ function downloadData() {
   downloadLink.click();
   
   URL.revokeObjectURL(url);
+  
+  const quad = new QuadTree(new Boundary(-28.188244, 153.764648, -37.614231, 140.976563), 100);
+  for (let id in lines.data) {
+    const grade = lines.data[id].grade;
+    for (let latLng of lines.data[id].coords) {
+      const point = { ...latLng, grade: grade }
+      quad.insert(point);
+    }
+  }
+  
+  const json2 = JSON.stringify(quad);
+  const url2 = URL.createObjectURL(new Blob([json2], {type: 'application/json'}));
+  const title2 = prompt("Name your QuadTree file:");
+  if (title2 == null) return URL.revokeObjectURL(url2);
+  
+  downloadLink.href = url2;
+  downloadLink.download = `${title2}.json`;
+  downloadLink.click();
+  
+  URL.revokeObjectURL(url2);
   downloadLink.remove();
   
   displayAlert("success", "Line data downloaded.");
@@ -521,4 +541,80 @@ function displayAlert(type, text) {
   // wait and then hide the alert
   setTimeout(() => alert.remove(), 5000);
   return alert;
+}
+
+class Boundary {
+  constructor(north, east, south, west) {
+    this.north = north;
+    this.east = east;
+    this.south = south;
+    this.west = west;
+  }
+  
+  contains(point) {
+    const { north, east, south, west } = this;
+    return (
+      point.lat < north &&
+      point.lng < east &&
+      point.lat >= south &&
+      point.lng >= west
+    );
+  }
+}
+
+class QuadTree {
+  constructor(boundary, capacity) {
+    this.boundary = boundary;
+    this.capacity = capacity;
+    this.branches = [];
+    this.points = [];
+    this.leaf = true;
+  }
+  
+  insert(point) {
+    if (!this.boundary.contains(point)) return;
+    
+    if (this.leaf) {
+      this.points.push(point);
+      if (this.points.length > this.capacity) {
+        this.branch();
+        this.points = [];
+      }
+    } else {
+      for (let branch of this.branches) {
+        branch.insert(point);
+      }
+    }
+  }
+  
+  search(point) {
+    if (this.boundary.contains(point)) {
+      if (this.leaf) return this;
+      
+      for (let branch of this.branches) {
+        const result = branch.search(point);
+        if (result != null) return result;
+      }
+    }
+  }
+  
+  branch() {
+    const { north, east, south, west } = this.boundary;
+    const midLng = east - (east - west) / 2;
+    const midLat = north - (north - south) / 2;
+    
+    const sw = new QuadTree(new Boundary(midLat, midLng, south, west), this.capacity);
+    const nw = new QuadTree(new Boundary(north, midLng, midLat, west), this.capacity);
+    const ne = new QuadTree(new Boundary(north, east, midLat, midLng), this.capacity);
+    const se = new QuadTree(new Boundary(midLat, east, south, midLng), this.capacity);
+    
+    this.branches = [nw, ne, se, sw];
+    this.leaf = false;
+    
+    for (let point of this.points) {
+      for (let branch of this.branches) {
+        branch.insert(point);
+      }
+    }
+  }
 }
